@@ -1,0 +1,73 @@
+
+<header class="app-header">
+  <nav class="navbar navbar-expand-md">
+    <a class="navbar-brand" >Hello {{loginUserName}}</a>
+  </nav>
+  <ul class="nav justify-content-end">
+    <li class="nav-item">
+      <a class="nav-link active" (click)="logout()">Logout</a>
+    </li>
+  </ul>
+</header>
+
+<main role="main" class="container content">
+  <div class="row chat-content">
+    <div class="col-3 chat-list-container">
+      <ul class="user-list">
+        <li *ngFor="let user of chatListUsers; let i = index" (click)="selectedUser(user,i)" [class.active]="selectedIndex  == i">
+          {{ user.userName}}
+          <!-- <span [ngClass]="user.online === 'Y' ? 'online' : 'offline'"> </span> -->
+        </li>
+      </ul>
+
+    </div>
+    <div class="col-9 message-container">
+      <div class="massege-wrapper">
+        <div class="massege-container">
+
+          <div class="opposite-user" >           
+            Chatting with {{selectedUserName}} 
+          </div>
+
+          <ul #messageThread class="message-thread" *ngIf="messages?.length > 0">
+            <li *ngFor="let message of messages" [class.floatright]="alignMessage(message.toUserId)">
+              <span *ngIf="message.message !=''">{{ message.message}}</span>
+              <img *ngIf="message.isFile && message.fileType == 'image/jpeg'" src="{{'data:image/jpg;base64,' + message.imageBaseData}}" (click)="downloadFile(message)"/>
+              <a style=" color: blue;" *ngIf="message.isFile && message.fileType != 'image/jpeg'" (click)="downloadFile(message)"><br *ngIf="message.message !=''">{{ message.fileName}}</a>
+            </li>
+            
+          </ul>
+
+          <div class="message-thread start-chatting-banner" *ngIf="messages?.length == 0">
+            <p class="heading">
+              
+              You haven't chatted with  {{selectedUserName}}  in a while,
+              <span class="sub-heading">Say Hi.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="message-typer">
+     
+          <form [formGroup]="messageForm" novalidate>
+            <textarea class="message form-control" placeholder="Type Message here..."
+              formControlName="message">
+              </textarea>
+              <button type="button"  class="btn btn-success pull-right" (click)="sendMessage($event)">Send</button> 
+          </form>
+
+          <div class="card-container">
+            <input type="file" id="FUImage" name="FUImage" accept="" (change)="handleFileInput($event.target.files)">          
+          </div>
+          <!-- <div class="card-container">
+            <img src="{{ImageBaseData}}" alt="Selected Image" height="100" width="100">
+          </div> -->
+
+        </div>
+
+
+
+      </div>
+    </div>
+  </div>
+</main>
