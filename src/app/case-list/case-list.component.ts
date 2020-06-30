@@ -31,15 +31,30 @@ export class CaseListComponent implements OnInit {
   ImageBaseData: string | ArrayBuffer = null;
   FileType: string;
   FileName: string;
-
+  @ViewChild('myInput') myInputVariable: ElementRef;
+  isNotification: boolean = false;
 
   constructor(private coronavirusService: CoronavirusService,
     private router: Router, private toastr: ToastrService, private location: Location, private http: HttpClient) {
     this.socket = io("http://localhost:3000");
-    this.socket.on('my broadcast', (data: string) => {
+    this.socket.on('my broadcast', (data) => {
 
-      this.getMessages(this.selectedUserId);
 
+      setTimeout(() => {
+        if (this.userId == data.msg) {
+          let data = {
+            fromUserId: this.selectedUserId,
+            toUserId: this.userId,
+          }
+            this.coronavirusService.updateMessageRead(data)
+              .subscribe(data => console.log("Message updated successfully"),
+                error => console.log(error));
+                this.getMessages(this.selectedUserId);
+        }
+        else{
+          this.getMessages(this.selectedUserId);
+        }
+      }, 100);
     });
 
   }
@@ -51,7 +66,6 @@ export class CaseListComponent implements OnInit {
     });
     this.userId = Number(localStorage.getItem('userId'));
     this.loginUserName = localStorage.getItem('userName');
-    // console.log("loginUserID:", this.userId);
     this.getUserList();
 
 
@@ -69,13 +83,35 @@ export class CaseListComponent implements OnInit {
           this.chatListUsers = data;
           this.selectedUserName = this.chatListUsers[0].userName;
           this.selectedUserId = this.chatListUsers[0].userId;
-          this.getMessages(this.chatListUsers[0].userId);
+
+          this.updateAllMessageRead(this.chatListUsers[0].userId);
+
+          // this.getMessages(this.chatListUsers[0].userId);
         });
 
 
   }
+
+
+  updateAllMessageRead(toUserId: number) {
+    let data = {
+      fromUserId: toUserId,
+      toUserId: this.userId,
+    }
+    this.coronavirusService.updateMessageRead(data)
+      .subscribe(data => console.log("Message updated successfully"),
+        error => console.log(error));
+    // this.getMessages(toUserId);
+    this.socket.emit('my message', 'ReadData.');
+  }
+
   alignMessage(userId: number): boolean {
-    return this.userId === userId ? false : true;
+    return this.userId != userId;
+  }
+
+  readMessage(data) {
+    var temp = this.userId != data.toUserId && data.isRead;
+    return temp;
   }
 
   getMessages(toUserId: number) {
@@ -84,12 +120,15 @@ export class CaseListComponent implements OnInit {
     this.coronavirusService.searchData(this.searchData)
       .subscribe(data => {
         this.messages = data;
-        this.scrollMessageContainer();
+        setTimeout(() => {
+          this.scrollMessageContainer();
+        }, 100);
+
+        //   this.scrollMessageContainer();
       }, error => console.log(error));
   }
 
   sendMessage(event) {
-    debugger;
     // if (event.keyCode === 13) {
     let message;
     if (this.messageForm.controls['message'].value != null) {
@@ -102,7 +141,7 @@ export class CaseListComponent implements OnInit {
     else {
       let data = {
         fromUserId: this.userId,
-        message: message,
+        message: message == undefined ? "" : message,
         toUserId: this.selectedUserId,
         imageBaseData: this.ImageBaseData,
         fileName: this.FileName,
@@ -110,10 +149,19 @@ export class CaseListComponent implements OnInit {
         isFile: this.ImageBaseData != null ? true : false
       }
       this.coronavirusService.sendMessage(data)
-        .subscribe(data => console.log(data), error => console.log(error));
-      this.messageForm.reset();     
+        .subscribe(data => console.log("Message send successfully"),
+          error => console.log(error));
+      this.messageForm.reset();
+      this.myInputVariable.nativeElement.value = "";
       this.toastr.success('Message send successfully!', '');
-      this.socket.emit('my message', 'Hello there from Angular.');
+      this.socket.emit('my message', this.selectedUserId);
+
+      // this.socket.emit("message_sent", { sentuserid: this.userId });
+      // this.socket.on("message_sent_correctly", function (data1) {
+      //   debugger;
+      //   this.socket.emit("check_id", { ci: data1.msc, });
+
+      // });
     }
     // }
   }
@@ -136,10 +184,10 @@ export class CaseListComponent implements OnInit {
 
   selectedUser(user, index) {
     this.selectedIndex = index;
-    console.log("ToUserID:", user.userId);
     this.selectedUserId = user.userId;
     this.selectedUserName = user.userName;
-    this.getMessages(user.userId);
+    this.updateAllMessageRead(user.userId);
+    // this.getMessages(user.userId);
   }
 
   logout() {
@@ -149,13 +197,11 @@ export class CaseListComponent implements OnInit {
 
   //Image Upload Code
   handleFileInput(files: FileList) {
-    debugger;
     let me = this;
     let file = files[0];
     let reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = function () {
-      console.log(reader.result);
       me.ImageBaseData = reader.result.toString().split(',')[1];
       me.FileName = file.name;
       me.FileType = file.type;
@@ -166,7 +212,7 @@ export class CaseListComponent implements OnInit {
   }
 
   public base64ToBlob(b64Data, contentType = '', sliceSize = 512) {
-    b64Data = b64Data.replace(/\s/g, ''); //IE compatibility...
+    b64Data = b64Data.replace(/\s/g, '');
     let byteCharacters = atob(b64Data);
     let byteArrays = [];
     for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
@@ -183,7 +229,6 @@ export class CaseListComponent implements OnInit {
   }
 
   downloadFile(data) {
-    debugger;    
     if (data.imageBaseData) {
       var blob = this.base64ToBlob(data.imageBaseData, data.fileType);
       const url = window.URL.createObjectURL(blob);
@@ -197,12 +242,5 @@ export class CaseListComponent implements OnInit {
     }
   }
 
-
-
-
 }
 
-// export class FileUplodVM {
-//   ImageBaseData: string;
-
-// }

@@ -15,8 +15,9 @@
     <div class="col-3 chat-list-container">
       <ul class="user-list">
         <li *ngFor="let user of chatListUsers; let i = index" (click)="selectedUser(user,i)" [class.active]="selectedIndex  == i">
-          {{ user.userName}}
-          <!-- <span [ngClass]="user.online === 'Y' ? 'online' : 'offline'"> </span> -->
+          <span>{{ user.userName}}</span>
+           <!-- <i *ngIf="readMessage(message)" style="margin-left: 150px" class="fa fa-bell" ></i> -->
+
         </li>
       </ul>
 
@@ -30,12 +31,20 @@
           </div>
 
           <ul #messageThread class="message-thread" *ngIf="messages?.length > 0">
-            <li *ngFor="let message of messages" [class.floatright]="alignMessage(message.toUserId)">
-              <span *ngIf="message.message !=''">{{ message.message}}</span>
-              <img *ngIf="message.isFile && message.fileType == 'image/jpeg'" src="{{'data:image/jpg;base64,' + message.imageBaseData}}" (click)="downloadFile(message)"/>
-              <a style=" color: blue;" *ngIf="message.isFile && message.fileType != 'image/jpeg'" (click)="downloadFile(message)"><br *ngIf="message.message !=''">{{ message.fileName}}</a>
+            <li *ngFor="let message of messages;last as isLast" [class.floatright]="alignMessage(message.toUserId)">
+           
+
+              <span *ngIf="message.message !=''">{{ message.message}}</span><br *ngIf="message.fileType == 'image/jpeg' || message.fileType == 'image/png' || message.fileType == 'image/bmp' || message.fileType == 'image/jpg' || message.fileType == 'image/tiff' || message.fileType == 'image/gif'">
+
+              <img *ngIf="message.isFile && (message.fileType == 'image/jpeg' || message.fileType == 'image/png' || message.fileType == 'image/bmp' || message.fileType == 'image/jpg' || message.fileType == 'image/tiff' || message.fileType == 'image/gif')"
+               height="200px" width="200px" src="{{'data:image/jpg;base64,' + message.imageBaseData}}" (click)="downloadFile(message)"/>
+
+              <a style=" color: blue;" *ngIf="message.isFile && (message.fileType != 'image/jpeg' && message.fileType != 'image/png' && message.fileType != 'image/bmp' && message.fileType != 'image/jpg'  && message.fileType != 'image/tiff' && message.fileType != 'image/gif')" 
+              (click)="downloadFile(message)"><br *ngIf="message.message !=''">{{ message.fileName}}</a>
+
+              <i  *ngIf="readMessage(message)" style="margin-left: 17px" class="fa fa-eye" ></i>
             </li>
-            
+          
           </ul>
 
           <div class="message-thread start-chatting-banner" *ngIf="messages?.length == 0">
@@ -57,7 +66,7 @@
           </form>
 
           <div class="card-container">
-            <input type="file" id="FUImage" name="FUImage" accept="" (change)="handleFileInput($event.target.files)">          
+            <input #myInput type="file" ref="fileref" accept="" (change)="handleFileInput($event.target.files)">          
           </div>
           <!-- <div class="card-container">
             <img src="{{ImageBaseData}}" alt="Selected Image" height="100" width="100">

@@ -73,5 +73,9 @@ export class CoronavirusService {
     return this.http.post(this.loginUrl + "SendMessage", data);
   }
 
+  updateMessageRead(data) {
+    return this.http.post(this.loginUrl + "ReadMessage", data);
+  }
+
 
 }
