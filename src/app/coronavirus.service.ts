@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { Coronavirus } from "./coronavirus";
 import * as io from 'socket.io-client';
 
 @Injectable({
@@ -11,28 +10,12 @@ export class CoronavirusService {
   private subject = new Subject<boolean>();
   public isLoginData = false;
 
-  // http://localhost:3000/case/GetAll
-  private baseUrl = 'http://localhost:3000/case/';
-  // private baseUrl = 'https://localhost:44352/api/case';
-  private loginUrl = 'http://localhost:3000/users/'
-  // private loginUrl = 'https://localhost:44352/api/Authentication';
-  private searchUrl = 'https://localhost:44352/api/SearchCaseInfos';
+  private baseUrl = 'http://chat-bot-api.live1.dev.radixweb.net/users/'
   private socket;
 
-  // constructor(private http: HttpClient) { }
-
   constructor(private http: HttpClient) {
-   // this.socket = io(this.baseUrl);
-    
-  }
 
-  // setupSocketConnection() {
-  //   this.socket = io("http://localhost:3000");
-  //   this.socket.emit('my message', 'Hello there from Angular.');
-  //   this.socket.on('my broadcast', (data: string) => {
-  //     console.log(data);
-  //   });
-  // }
+  }
 
   addToCart(data: boolean) {
     this.subject.next(data);
@@ -48,33 +31,33 @@ export class CoronavirusService {
 
 
   getToken() {
-    return this.http.get(this.loginUrl);
+    return this.http.get(this.baseUrl);
   }
 
   login(userData) {
-    return this.http.post(this.loginUrl + "login", userData);
+    return this.http.post(this.baseUrl + "login", userData);
   }
 
   // getChatUserList() {
   //   debugger;
-  //   return this.http.get(this.loginUrl + "GetAll");
+  //   return this.http.get(this.baseUrl + "GetAll");
   // }
 
   getChatUserList(id: number): Observable<any> {
 
-    return this.http.get(`${this.loginUrl + "GetAll"}/${id}`);
+    return this.http.get(`${this.baseUrl + "GetAll"}/${id}`);
   }
 
   searchData(data) {
-    return this.http.post(this.loginUrl + "Search", data);
+    return this.http.post(this.baseUrl + "Search", data);
   }
 
   sendMessage(data) {
-    return this.http.post(this.loginUrl + "SendMessage", data);
+    return this.http.post(this.baseUrl + "SendMessage", data);
   }
 
   updateMessageRead(data) {
-    return this.http.post(this.loginUrl + "ReadMessage", data);
+    return this.http.post(this.baseUrl + "ReadMessage", data);
   }
 
 

@@ -36,7 +36,7 @@ export class CaseListComponent implements OnInit {
 
   constructor(private coronavirusService: CoronavirusService,
     private router: Router, private toastr: ToastrService, private location: Location, private http: HttpClient) {
-    this.socket = io("http://localhost:3000");
+    this.socket = io("http://chat-bot-api.live1.dev.radixweb.net");
     this.socket.on('my broadcast', (data) => {
 
 

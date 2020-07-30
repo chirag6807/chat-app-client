@@ -36,6 +36,7 @@ export class LoginComponent implements OnInit {
     this.coronavirusService.login(this.authForm.value)
       .subscribe(
         data => {
+          debugger;
           // console.log(data);
           localStorage.setItem('token', data["jwtoken"]);
           localStorage.setItem('userId', data["userId"]);
